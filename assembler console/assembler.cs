@@ -152,14 +152,6 @@ namespace assembler_console
                 //else
                 //    o.error.Add("illigal operand");
                 //o.size = 0;
-                foreach (string item in locations)
-                {
-                    symtable[item] += global.locationcounter;
-                }
-                global.locationcounter = Convert.ToUInt16(symtable[locations.Last()] + literals.Last().size);
-                obs.AddRange(literals);
-                literals = new List<obcode>();
-                return null;
             }
             else if (command.Equals("ltorg"))
             {
