@@ -8,7 +8,7 @@ namespace assembler_console
 {
     class assembler
     {
-        private string[] directives = { "start", "end", "word", "byte", "resw", "resb","ltorg" };
+        private string[] directives = { "start", "end", "word", "byte", "resw", "resb","ltorg", "equ" };
         //hello
         public Dictionary<string, ushort> symtable = new Dictionary<string, ushort>();
         Dictionary<string, byte> optable = new Dictionary<string, byte>();
@@ -42,7 +42,7 @@ namespace assembler_console
             }
             if (isdirective(command))
             {
-                obcode o = assembledirective(command, operand, error, true);
+                obcode o = assembledirective(command, operand, error, true, label);
                 if (o!=null)
                     obs.Add(o);
             }
@@ -86,6 +86,7 @@ namespace assembler_console
                         o.index = true;
                         break;
                     case 3:
+                        operand = null;
                         x = operand.Split(',');
                         o.operandcode = UInt16.Parse(x[0], System.Globalization.NumberStyles.HexNumber);
                         o.index = true;
@@ -95,6 +96,7 @@ namespace assembler_console
                         o.index = false;
                         break;
                     case 4:
+                        operand = null;
                         o.operandcode = UInt16.Parse(operand, System.Globalization.NumberStyles.HexNumber);
                         o.index = false;
                         break;
@@ -112,7 +114,7 @@ namespace assembler_console
             
 
         }
-        private obcode assembledirective(string command, string operand, List<string> error, bool loc)
+        private obcode assembledirective(string command, string operand, List<string> error, bool loc, string label)
         {
             obcode o = new obcode();
             o.line = global.line;
@@ -166,13 +168,24 @@ namespace assembler_console
                 LiteralCounter = 0;
                 return null;
             }
+            else if (command.Equals("equ"))
+            {
+                ushort number;
+                if (UInt16.TryParse(operand,out number))
+                    symtable[label] = number;
+                else if (symtable.ContainsKey(operand))
+                        symtable[label] = symtable[operand];
+                    else
+                        global.GeneralErrors.Add("illigal operand at equ at line " + global.line.ToString());
+                 
+            }
             else if (command.Equals("byte"))
             {
                 if (operand[0] == 'c' || operand[0] == 'C')
                 {
                     o.type = 41;
-                   operand =  operand.Trim(operand[0]);
-                    operand =  operand.Trim('\'');
+                    operand = operand.Trim(operand[0]);
+                    operand = operand.Trim('\'');
                     foreach (char c in operand)
                     {
                         o.bytes.Add(c);
@@ -183,7 +196,7 @@ namespace assembler_console
                 else if (operand[0] == 'x' || operand[0] == 'X')
                 {
                     o.type = 40;
-                    operand =  operand.Trim(operand[0], '\'');
+                    operand = operand.Trim(operand[0], '\'');
                     if (validaddress(operand))
                     {
                         o.badbigfatoperand = UInt64.Parse(operand, System.Globalization.NumberStyles.HexNumber);
@@ -194,8 +207,8 @@ namespace assembler_console
                         o.error.Add("wrong operand");
                         o.size = 1;
                     }
-                      
-                    
+
+
                 }
                 else
                 {
@@ -226,8 +239,8 @@ namespace assembler_console
                         o.numericaloperand = 16777216 - i;
                     else
                         o.error.Add("too small operand ");
-                    
-                   
+
+
                 }
                 else if (Char.IsDigit(operand[0]))
                 {
@@ -281,7 +294,7 @@ namespace assembler_console
                     o.size = Convert.ToUInt16(i);
                     global.locationcounter += o.size;
                 }
-                    
+
 
             }
 
@@ -302,9 +315,9 @@ namespace assembler_console
                 locations.Add(operand);
                 operand = operand.Trim('=');
                 if (CharOrHex(operand))
-                    literals.Add(assembledirective("byte", operand, null, false));
+                    literals.Add(assembledirective("byte", operand, null, false, ""));
                 else if (Char.IsDigit(operand[0]))
-                    literals.Add(assembledirective("word", operand, null, false));
+                    literals.Add(assembledirective("word", operand, null, false,""));
                 else
                 {
                     obcode o = new obcode();

@@ -36,13 +36,24 @@ namespace assembler_console
                     {
                         if (o.type == 0)
                         {
-                            if (a.symtable.ContainsKey(o.operand))
+                            if (o.operand != null)
+                            {
+                                if (a.symtable.ContainsKey(o.operand))
+                                {
+                                    if (o.index)
+                                        file.Write("{0:x6}", o.opcode * 0x10000 + 0x8000 + a.symtable[o.operand]);
+                                    else
+                                        file.Write("{0:x6}", o.opcode * 0x10000 + a.symtable[o.operand]);
+                                }
+                            }
+                            else
                             {
                                 if (o.index)
-                                    file.Write("{0:x6}", o.opcode * 0x10000 + 0x8000 + a.symtable[o.operand]);
+                                    file.Write("{0:x6}", o.opcode * 0x10000 + 0x8000 + o.operandcode);
                                 else
-                                    file.Write("{0:x6}", o.opcode * 0x10000 + a.symtable[o.operand]);
+                                    file.Write("{0:x6}", o.opcode * 0x10000 + o.operandcode);
                             }
+                            
                         }
                         else if (o.type == 3)
                         {

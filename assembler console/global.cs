@@ -14,5 +14,6 @@ namespace assembler_console
         public static ushort first = 0;
         public static ushort startaddress=0;
         public static bool exe = false;
+        public static List<string> GeneralErrors = new List<string>();
     }
 }
