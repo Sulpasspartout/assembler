@@ -162,6 +162,7 @@ namespace assembler_console
                 global.locationcounter =Convert.ToUInt16 (symtable[locations.Last()] + literals.Last().size);
                 obs.AddRange(literals);
                 literals = new List<obcode>();
+                locations = new List<string>();
                 LiteralCounter = 0;
                 return null;
             }
