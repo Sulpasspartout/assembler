@@ -86,9 +86,9 @@ namespace assembler_console
                         o.index = true;
                         break;
                     case 3:
-                        operand = null;
                         x = operand.Split(',');
                         o.operandcode = UInt16.Parse(x[0], System.Globalization.NumberStyles.HexNumber);
+                        operand = null;
                         o.index = true;
                         break;
                     case 2:
@@ -96,8 +96,9 @@ namespace assembler_console
                         o.index = false;
                         break;
                     case 4:
-                        operand = null;
+                        
                         o.operandcode = UInt16.Parse(operand, System.Globalization.NumberStyles.HexNumber);
+                        operand = null;
                         o.index = false;
                         break;
                     default:
@@ -177,7 +178,7 @@ namespace assembler_console
                         symtable[label] = symtable[operand];
                     else
                         global.GeneralErrors.Add("illigal operand at equ at line " + global.line.ToString());
-                 
+                return null;
             }
             else if (command.Equals("byte"))
             {
