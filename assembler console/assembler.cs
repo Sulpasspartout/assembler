@@ -9,6 +9,7 @@ namespace assembler_console
     class assembler
     {
         private string[] directives = { "start", "end", "word", "byte", "resw", "resb","ltorg" };
+        //hello
         public Dictionary<string, ushort> symtable = new Dictionary<string, ushort>();
         Dictionary<string, byte> optable = new Dictionary<string, byte>();
         public List<obcode> obs = new List<obcode>();
