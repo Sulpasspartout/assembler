@@ -12,7 +12,7 @@ namespace assembler_console
         {
             assembler a = new assembler();
             //heloo
-            for (int i = 0; i < 6; i++)
+            for (int i = 0; i < 10; i++)
             {
                 command c = new command();
                 c.label = Console.ReadLine();

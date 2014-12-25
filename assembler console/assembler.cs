@@ -9,12 +9,12 @@ namespace assembler_console
     class assembler
     {
         private string[] directives = { "start", "end", "word", "byte", "resw", "resb","ltorg", "equ", "org" };
-        //hello
         public Dictionary<string, ushort> symtable = new Dictionary<string, ushort>();
         Dictionary<string, byte> optable = new Dictionary<string, byte>();
         public List<obcode> obs = new List<obcode>();
-        public List<obcode> literals = new List<obcode>();
-        public List<string> locations = new List<string>();
+        private List<obcode> literals = new List<obcode>();
+        private List<string> locations = new List<string>();
+        private Stack<ushort> orgstack = new Stack<ushort>();
         private ushort LiteralCounter =0 ;
         public assembler()
         {
@@ -184,9 +184,23 @@ namespace assembler_console
             {
                 ushort number;
                 if (UInt16.TryParse(operand,out number))
-                    global.locationcounter= UInt16.Parse(operand,System.Globalization.NumberStyles.HexNumber);
+                {
+                    orgstack.Push(global.locationcounter);
+                    global.locationcounter = UInt16.Parse(operand, System.Globalization.NumberStyles.HexNumber);
+                }
+                else if (operand == "")
+                {
+                    if (orgstack.Count != 0)
+                        global.locationcounter = orgstack.Pop();
+                    else
+                        global.GeneralErrors.Add("Invalid operand to org at line " + global.line.ToString());
+                }
                 else if (symtable.ContainsKey(operand))
+                {
+                    orgstack.Push(global.locationcounter);
                     global.locationcounter = symtable[operand];
+                }
+                    
                 else
                     global.GeneralErrors.Add("illigal operand at equ at line " + global.line.ToString());
                 return null;
