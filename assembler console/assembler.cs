@@ -8,7 +8,7 @@ namespace assembler_console
 {
     class assembler
     {
-        private string[] directives = { "start", "end", "word", "byte", "resw", "resb","ltorg", "equ" };
+        private string[] directives = { "start", "end", "word", "byte", "resw", "resb","ltorg", "equ", "org" };
         //hello
         public Dictionary<string, ushort> symtable = new Dictionary<string, ushort>();
         Dictionary<string, byte> optable = new Dictionary<string, byte>();
@@ -178,6 +178,17 @@ namespace assembler_console
                         symtable[label] = symtable[operand];
                     else
                         global.GeneralErrors.Add("illigal operand at equ at line " + global.line.ToString());
+                return null;
+            }
+            else if (command.Equals("org"))
+            {
+                ushort number;
+                if (UInt16.TryParse(operand,out number))
+                    global.locationcounter= UInt16.Parse(operand,System.Globalization.NumberStyles.HexNumber);
+                else if (symtable.ContainsKey(operand))
+                    global.locationcounter = symtable[operand];
+                else
+                    global.GeneralErrors.Add("illigal operand at equ at line " + global.line.ToString());
                 return null;
             }
             else if (command.Equals("byte"))
