@@ -6,23 +6,14 @@ using System.Threading.Tasks;
 
 namespace assembler_console
 {
-    class Program
+   static class Program
     {
-        static void Main(string[] args)
+        static void main(List<command> commands)
         {
             assembler a = new assembler();
-            //heloo
-            for (int i = 0; i < 10; i++)
+            foreach (command c in commands)
             {
-                command c = new command();
-                c.label = Console.ReadLine();
-                c.comnd = Console.ReadLine();
-                c.operand = Console.ReadLine();
-                if (!c.label.Equals(""))
-                    a.driver(c.label, c.comnd, c.operand);
-                else
-                    a.driver(null, c.comnd, c.operand);
-                global.line++;
+                a.driver(c.label, c.comnd, c.operand);
             }
             writerecord r = new writerecord();
             r.write(a.obs);

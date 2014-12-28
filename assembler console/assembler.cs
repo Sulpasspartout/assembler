@@ -16,6 +16,7 @@ namespace assembler_console
         private List<string> locations = new List<string>();
         private Stack<ushort> orgstack = new Stack<ushort>();
         private ushort LiteralCounter =0 ;
+        public bool endofassembling = false;
         public assembler()
         {
             initialize();
@@ -124,49 +125,56 @@ namespace assembler_console
             {
                 o.type = 1;
 
-               // if (validaddress(operand))
-               // {
-               //     if (!global.start)
-               //     {
+                if (validaddress(operand))
+                {
+                    if (!global.start)
+                    {
 
                         global.locationcounter = global.startaddress = UInt16.Parse(operand, System.Globalization.NumberStyles.HexNumber);
-               //         global.start = true;
-               //     }
+                        global.start = true;
+                    }
 
-               //    // else
-               //        // o.error.Add("duplicate start");
-               // }
+                    else
+                        global.GeneralErrors.Add("duplicate start at line "+global.line);
+                }
 
-               //// else
-               //    // o.error.Add("illigal operand");
-               //// o.size = 0;
+                else
+                   global.GeneralErrors.Add("illigal operand at line"+ global.line);
+                o.size = 0;
 
             }
             else if (command.Equals("end"))
             {
                 o.type = 2;
-                //if (validlabel(operand))
-                //{
-                //    if (symtable.ContainsKey(operand))
-                //        o.operandcode = symtable[operand];
-                //    else
-                //        o.error.Add("operand not found");
-                //}
-                //else
-                //    o.error.Add("illigal operand");
-                //o.size = 0;
+                endofassembling = true;
+                if (literals.Count > 0)
+                {
+                    foreach (string item in locations)
+                    {
+                        symtable[item] += global.locationcounter;
+                    }
+                    global.locationcounter = Convert.ToUInt16(symtable[locations.Last()] + literals.Last().size);
+                    obs.AddRange(literals);
+                    literals = new List<obcode>();
+                    locations = new List<string>();
+                    LiteralCounter = 0;
+                }
             }
             else if (command.Equals("ltorg"))
             {
-                foreach (string item in locations)
+                if (literals.Count > 0)
                 {
-                    symtable[item] += global.locationcounter;
+                    foreach (string item in locations)
+                    {
+                        symtable[item] += global.locationcounter;
+                    }
+                    global.locationcounter = Convert.ToUInt16(symtable[locations.Last()] + literals.Last().size);
+                    obs.AddRange(literals);
+                    literals = new List<obcode>();
+                    locations = new List<string>();
+                    LiteralCounter = 0;
                 }
-                global.locationcounter =Convert.ToUInt16 (symtable[locations.Last()] + literals.Last().size);
-                obs.AddRange(literals);
-                literals = new List<obcode>();
-                locations = new List<string>();
-                LiteralCounter = 0;
+                
                 return null;
             }
             else if (command.Equals("equ"))
@@ -174,6 +182,10 @@ namespace assembler_console
                 ushort number;
                 if (UInt16.TryParse(operand,out number))
                     symtable[label] = number;
+                else if (operand == "*")
+                {
+                    symtable[label] = global.locationcounter;
+                }
                 else if (symtable.ContainsKey(operand))
                         symtable[label] = symtable[operand];
                     else
@@ -337,22 +349,25 @@ namespace assembler_console
            
             if (operand[0] == '=')
             {
-                symtable.Add(operand, LiteralCounter);
-                locations.Add(operand);
-                operand = operand.Trim('=');
-                if (CharOrHex(operand))
-                    literals.Add(assembledirective("byte", operand, null, false, ""));
-                else if (Char.IsDigit(operand[0]))
-                    literals.Add(assembledirective("word", operand, null, false,""));
-                else
-                {
-                    obcode o = new obcode();
-                    o.type = 40;
-                    o.error.Add("invalid literal");
-                    literals.Add(o);
+                if (!symtable.ContainsKey(operand))
+                { 
+                    symtable.Add(operand, LiteralCounter);
+                    locations.Add(operand);
+                    operand = operand.Trim('=');
+                    if (CharOrHex(operand))
+                        literals.Add(assembledirective("byte", operand, null, false, ""));
+                    else if (Char.IsDigit(operand[0]))
+                        literals.Add(assembledirective("word", operand, null, false, ""));
+                    else
+                    {
+                        obcode o = new obcode();
+                        o.type = 40;
+                        o.error.Add("invalid literal");
+                        literals.Add(o);
+                    }
                 }
+              
                 return 2;
-
             }
             else if (!CharOrHex(operand))
             {
